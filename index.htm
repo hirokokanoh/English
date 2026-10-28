@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>英語熟語 3択クイズ</title>
+  <style>
+    :root {
+      --bg1: #eef5ff;
+      --bg2: #f7f1ff;
+      --bg3: #fff7ef;
+      --card: rgba(255,255,255,0.82);
+      --line: #deebff;
+      --primary: #4d7df5;
+      --primary-strong: #2f5ee8;
+      --success: #22c55e;
+      --success-soft: rgba(34, 197, 94, 0.12);
+      --danger: #ef4444;
+      --danger-soft: rgba(239, 68, 68, 0.12);
+      --text: #1f2a37;
+      --muted: #62738c;
+      --shadow: 0 30px 70px rgba(61, 95, 178, 0.18);
+      --chip-shadow: 0 10px 20px rgba(77, 125, 245, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: "Segoe UI", "Hiragino Sans", "Yu Gothic", sans-serif;
+      background:
+        radial-gradient(circle at 10% 20%, rgba(77,125,245,0.12), transparent 20%),
+        radial-gradient(circle at 90% 15%, rgba(168,85,247,0.10), transparent 25%),
+        radial-gradient(circle at 60% 100%, rgba(34,197,94,0.08), transparent 30%),
+        linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
+      color: var(--text);
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 28px 18px;
+    }
+
+    .app {
+      position: relative;
+      width: min(980px, 100%);
+      background: rgba(255,255,255,0.72);
+      border: 1px solid rgba(255,255,255,0.8);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+    }
+
+    .decor {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(22px);
+      opacity: 0.7;
+      animation: float 13s ease-in-out infinite alternate;
+    }
+
+    .blob.one {
+      width: 220px; height: 220px;
+      background: rgba(77,125,245,0.18);
+      top: -50px; left: -30px;
+    }
+
+    .blob.two {
+      width: 260px; height: 260px;
+      background: rgba(167, 139, 250, 0.18);
+      right: -50px; top: 80px;
+      animation-delay: 1.4s;
+    }
+
+    .blob.three {
+      width: 200px; height: 200px;
+      background: rgba(52, 211, 153, 0.15);
+      left: 35%; bottom: -60px;
+      animation-delay: 2.2s;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(0) translateX(0) scale(1); }
+      100% { transform: translateY(-18px) translateX(20px) scale(1.08); }
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      padding: 28px 24px 24px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .icon-badge {
+      width: 60px;
+      height: 60px;
+      display: grid;
+      place-items: center;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #eff6ff, #f5ebff);
+      border: 1px solid rgba(77,125,245,0.14);
+      box-shadow: var(--chip-shadow);
+      font-size: 2.3rem;
+      animation: pulse 2.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.6rem, 2.5vw, 2.5rem);
+      font-weight: 900;
+      letter-spacing: 0.02em;
+    }
+
+    .score {
+      background: linear-gradient(135deg, #eef4ff, #f5efff);
+      border: 1px solid rgba(77,125,245,0.15);
+      border-radius: 999px;
+      padding: 10px 18px;
+      font-weight: 800;
+      color: var(--primary-strong);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.5);
+    }
+
+    .difficulty-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 8px;
+      margin-bottom: 18px;
+    }
+
+    .tab-btn {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.78);
+      border-radius: 12px;
+      color: var(--muted);
+      font-weight: 800;
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 18px rgba(44, 91, 192, 0.08);
+      border-color: rgba(77,125,245,0.4);
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, var(--primary), var(--primary-strong));
+      color: white;
+      border-color: transparent;
+      box-shadow: 0 16px 24px rgba(77,125,245,0.2);
+    }
+
+    .quiz-card {
+      background: rgba(255,255,255,0.7);
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      padding: 22px 18px 18px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.4);
+      animation: fadeInUp 0.3s ease;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .difficulty-badge {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+    }
+
+    .level-beginner {
+      background: rgba(34,197,94,0.12);
+      color: #166534;
+    }
+
+    .level-intermediate {
+      background: rgba(251,191,36,0.12);
+      color: #92400e;
+    }
+
+    .level-advanced {
+      background: rgba(168,85,247,0.12);
+      color: #6b21a8;
+    }
+
+    .question-no {
+      color: var(--muted);
+      font-size: 0.85rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+    }
+
+    .question-visual {
+      width: 120px;
+      height: 120px;
+      margin: 6px auto 16px;
+      display: grid;
+      place-items: center;
+      border-radius: 30px;
+      background: linear-gradient(135deg, rgba(77,125,245,0.12), rgba(255,255,255,0.72));
+      border: 1px solid rgba(77,125,245,0.12);
+      font-size: 3.5rem;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.6);
+      animation: bob 3.2s ease-in-out infinite;
+    }
+
+    @keyframes bob {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .question {
+      margin: 0 0 18px;
+      padding: 0 10px;
+      text-align: center;
+      font-size: clamp(1.14rem, 2vw, 1.7rem);
+      line-height: 1.6;
+      font-weight: 800;
+    }
+
+    .options {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .option-btn {
+      width: 100%;
+      background: rgba(255,255,255,0.9);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      color: var(--text);
+      font-size: 1rem;
+      text-align: left;
+      padding: 16px 18px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      border-color: rgba(77,125,245,0.38);
+      box-shadow: 0 14px 20px rgba(77,125,245,0.08);
+    }
+
+    .option-btn:disabled {
+      cursor: default;
+      opacity: 1;
+    }
+
+    .option-btn.correct {
+      background: var(--success-soft);
+      border-color: rgba(34,197,94,0.8);
+      color: #166534;
+      font-weight: 800;
+    }
+
+    .option-btn.wrong {
+      background: var(--danger-soft);
+      border-color: rgba(239,68,68,0.8);
+      color: #991b1b;
+      font-weight: 800;
+    }
+
+    .feedback {
+      min-height: 28px;
+      margin-top: 16px;
+      font-weight: 900;
+      text-align: center;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .feedback.correct {
+      color: var(--success);
+    }
+
+    .feedback.wrong {
+      color: var(--danger);
+    }
+
+    .meaning-box {
+      margin-top: 18px;
+      display: none;
+      background: rgba(77,125,245,0.06);
+      border: 1px solid rgba(77,125,245,0.15);
+      border-radius: 16px;
+      padding: 14px 16px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.3);
+    }
+
+    .meaning-box.show {
+      display: block;
+      animation: fadeInUp 0.25s ease;
+    }
+
+    .meaning-title {
+      font-size: 0.76rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+
+    .meaning-text {
+      font-size: 1.08rem;
+      line-height: 1.7;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .sentence-box {
+      margin-top: 12px;
+      display: none;
+      background: rgba(255,255,255,0.8);
+      border: 1px dashed rgba(77,125,245,0.32);
+      border-radius: 14px;
+      padding: 14px 16px;
+      line-height: 1.7;
+      color: var(--text);
+    }
+
+    .sentence-box.show {
+      display: block;
+      animation: fadeInUp 0.25s ease;
+    }
+
+    .sentence-box strong {
+      color: var(--primary-strong);
+    }
+
+    .speech-controls {
+      display: flex;
+      justify-content: center;
+      margin-top: 16px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .read-btn, .next-btn, .restart-btn {
+      border: none;
+      border-radius: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .read-btn {
+      background: linear-gradient(135deg, #f5f3ff, #eaf1ff);
+      color: var(--primary-strong);
+      border: 1px solid rgba(77,125,245,0.2);
+      padding: 11px 16px;
+      box-shadow: 0 10px 18px rgba(77,125,245,0.08);
+    }
+
+    .next-btn {
+      background: linear-gradient(135deg, var(--primary), var(--primary-strong));
+      color: white;
+      padding: 12px 24px;
+      display: none;
+      box-shadow: 0 14px 22px rgba(77,125,245,0.25);
+    }
+
+    .next-btn.visible {
+      display: inline-block;
+    }
+
+    .next-btn:hover, .read-btn:hover, .restart-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .result {
+      display: none;
+      padding: 28px 16px 8px;
+      text-align: center;
+      animation: fadeInUp 0.25s ease;
+    }
+
+    .result.show {
+      display: block;
+    }
+
+    .result h2 {
+      margin: 0 0 12px;
+      font-size: clamp(1.7rem, 2.4vw, 2.3rem);
+    }
+
+    .result p {
+      margin: 8px 0;
+      line-height: 1.8;
+      font-size: 1.08rem;
+    }
+
+    .restart-btn {
+      background: #111827;
+      color: white;
+      padding: 12px 22px;
+      margin-top: 18px;
+      box-shadow: 0 14px 22px rgba(17,24,39,0.18);
+    }
+
+    @media (max-width: 640px) {
+      .content {
+        padding: 22px 16px 18px;
+      }
+
+      .topbar {
+        align-items: flex-start;
+      }
+
+      .title-wrap {
+        align-items: flex-start;
+      }
+
+      .question-visual {
+        width: 90px; height: 90px;
+        font-size: 2.6rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="decor">
+      <div class="blob one"></div>
+      <div class="blob two"></div>
+      <div class="blob three"></div>
+    </div>
+
+    <div class="content">
+      <div class="topbar">
+        <div class="title-wrap">
+          <div class="icon-badge">🌟</div>
+          <h1>英語熟語 3択クイズ</h1>
+        </div>
+        <div class="score" id="score">得点: 0 / 0</div>
+      </div>
+
+      <div class="difficulty-tabs" id="difficulty-tabs" aria-label="難易度選択"></div>
+
+      <div id="quiz-area"></div>
+
+      <div class="result" id="result">
+        <h2>クイズ終了！</h2>
+        <p id="result-text"></p>
+        <button class="restart-btn" id="restart-btn">もう一度</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const quizData = {
+      初級: [
+        {
+          icon: "🗣️",
+          question: "“Break the ice” means:",
+          options: [
+            "A. To make a room colder",
+            "B. To start a conversation in a social setting",
+            "C. To fall and hurt yourself"
+          ],
+          answer: 1,
+          meaning: "人前で会話を切り出す",
+          example: "At first, nobody spoke, but Tom told a joke and broke the ice.",
+          explanation: "初対面の場で緊張をほぐして先に会話を始めること。"
+        },
+        {
+          icon: "📚",
+          question: "“Hit the books” means:",
+          options: [
+            "A. To throw a book",
+            "B. To study seriously",
+            "C. To buy a lot of books"
+          ],
+          answer: 1,
+          meaning: "真面目に勉強する",
+          example: "I have an exam tomorrow, so I need to hit the books tonight.",
+          explanation: "試験前などに集中して勉強すること。"
+        },
+        {
+          icon: "🍰",
+          question: "“Piece of cake” means:",
+          options: [
+            "A. A very easy task",
+            "B. A dessert made of cake",
+            "C. A difficult problem"
+          ],
+          answer: 0,
+          meaning: "非常に簡単なこと",
+          example: "The assignment was a piece of cake for her.",
+          explanation: "難しくなく、簡単にできることを表す表現。"
+        },
+        {
+          icon: "🌧️",
+          question: "“Under the weather” means:",
+          options: [
+            "A. Feeling sick or unwell",
+            "B. Standing outside in the rain",
+            "C. Being very busy"
+          ],
+          answer: 0,
+          meaning: "体調が悪い",
+          example: "I’m feeling under the weather, so I’ll take the day off.",
+          explanation: "風邪気味で元気が出ない状態。"
+        },
+        {
+          icon: "💸",
+          question: "“Cost an arm and a leg” means:",
+          options: [
+            "A. To be very inexpensive",
+            "B. To be very expensive",
+            "C. To require a lot of work"
+          ],
+          answer: 1,
+          meaning: "非常に高価である",
+          example: "That designer bag costs an arm and a leg.",
+          explanation: "値段がとても高く、手の出る範囲ではないこと。"
+        },
+        {
+          icon: "🤫",
+          question: "“Spill the beans” means:",
+          options: [
+            "A. To drop food on the floor",
+            "B. To reveal secret information",
+            "C. To cook beans"
+          ],
+          answer: 1,
+          meaning: "秘密を漏らす",
+          example: "She spilled the beans about the surprise party.",
+          explanation: "秘密にしておくべきことを無意識に話してしまうこと。"
+        }
+      ],
+      中級: [
+        {
+          icon: "😄",
+          question: "“Pull someone’s leg” means:",
+          options: [
+            "A. To help someone walk",
+            "B. To jokingly tease someone",
+            "C. To carry a person"
+          ],
+          answer: 1,
+          meaning: "冗談でからかう",
+          example: "He was only pulling your leg when he said he won the lottery.",
+          explanation: "本気ではない冗談やからかいを意味する。"
+        },
+        {
+          icon: "🌙",
+          question: "“Once in a blue moon” means:",
+          options: [
+            "A. Very often",
+            "B. Very rarely",
+            "C. At noon"
+          ],
+          answer: 1,
+          meaning: "めったにない",
+          example: "We only meet once in a blue moon now that we live in different cities.",
+          explanation: "非常に珍しく、ほとんど起こらないこと。"
+        },
+        {
+          icon: "📖",
+          question: "“On the same page” means:",
+          options: [
+            "A. Reading the same book",
+            "B. Agreeing or understanding the same thing",
+            "C. Sitting at the same desk"
+          ],
+          answer: 1,
+          meaning: "同じ考えや理解を持っている",
+          example: "Before we start the project, let’s make sure we’re all on the same page.",
+          explanation: "意見や理解が一致している状態。"
+        },
+        {
+          icon: "⚡",
+          question: "“At the drop of a hat” means:",
+          options: [
+            "A. Very quickly without delay",
+            "B. When it rains",
+            "C. When you are ready to leave"
+          ],
+          answer: 0,
+          meaning: "すぐに、即座に",
+          example: "He’ll help at the drop of a hat.",
+          explanation: "少しの待ち時間もなくすぐに動くこと。"
+        },
+        {
+          icon: "🍽️",
+          question: "“Bite off more than you can chew” means:",
+          options: [
+            "A. To eat too quickly",
+            "B. To take on a task that is too difficult",
+            "C. To eat too much"
+          ],
+          answer: 1,
+          meaning: "自分の力以上のことを引き受ける",
+          example: "I bit off more than I could chew when I agreed to finish three projects at once.",
+          explanation: "負担が大きすぎることを引き受けてしまうこと。"
+        },
+        {
+          icon: "🏀",
+          question: "“The ball is in your court” means:",
+          options: [
+            "A. It is your responsibility to take the next step",
+            "B. The game is over",
+            "C. You need to play sports"
+          ],
+          answer: 0,
+          meaning: "次の行動はあなた次第だ",
+          example: "I’ve given you the information; now the ball is in your court.",
+          explanation: "その後の動きや決定は相手の責任だという意味。"
+        }
+      ],
+      上級: [
+        {
+          icon: "✨",
+          question: "“A blessing in disguise” means:",
+          options: [
+            "A. A good thing that seemed bad at first",
+            "B. A gift that is wrapped in paper",
+            "C. A hidden treasure"
+          ],
+          answer: 0,
+          meaning: "後から見れば幸運だったこと",
+          example: "Losing that job was a blessing in disguise because it led to a better opportunity.",
+          explanation: "最初は不運に見えたが、後で良い結果につながったこと。"
+        },
+        {
+          icon: "🛑",
+          question: "“Call it a day” means:",
+          options: [
+            "A. To stop working for the day",
+            "B. To make a final decision",
+            "C. To begin a new project"
+          ],
+          answer: 0,
+          meaning: "その日の仕事を終える",
+          example: "We’ve finished the main tasks, so let’s call it a day.",
+          explanation: "その日やることが終わったので、そこで終えること。"
+        },
+        {
+          icon: "🥚",
+          question: "“Put all your eggs in one basket” means:",
+          options: [
+            "A. To choose a very safe plan",
+            "B. To risk everything on a single plan",
+            "C. To cook a difficult meal"
+          ],
+          answer: 1,
+          meaning: "全てを一つの方法に賭ける",
+          example: "Investing all your savings in one startup is like putting all your eggs in one basket.",
+          explanation: "一つの方法や人物に全てを依存し、リスクが高い状態。"
+        },
+        {
+          icon: "🚨",
+          question: "“In hot water” means:",
+          options: [
+            "A. To be very thirsty",
+            "B. To be in trouble",
+            "C. To be in a sauna"
+          ],
+          answer: 1,
+          meaning: "困っている、トラブルに巻き込まれている",
+          example: "The manager is in hot water after missing the deadline.",
+          explanation: "問題や非難の中心にいる状態。"
+        },
+        {
+          icon: "🏃",
+          question: "“Go the extra mile” means:",
+          options: [
+            "A. To travel a long distance",
+            "B. To make more effort than expected",
+            "C. To walk at a faster pace"
+          ],
+          answer: 1,
+          meaning: "期待以上に努力する",
+          example: "She went the extra mile to help her customer.",
+          explanation: "通常よりも多くの努力や配慮を払うこと。"
+        },
+        {
+          icon: "🕶️",
+          question: "“The elephant in the room” means:",
+          options: [
+            "A. A large animal at a meeting",
+            "B. An obvious problem everyone avoids discussing",
+            "C. A very noisy room"
+          ],
+          answer: 1,
+          meaning: "誰も話さない明白な問題",
+          example: "The company’s financial issues are the elephant in the room.",
+          explanation: "誰もが知っているが、避けている大きな問題。"
+        }
+      ]
+    };
+
+    const levels = Object.keys(quizData);
+
+    const state = {
+      level: levels[0],
+      currentIndex: 0,
+      score: 0,
+      answered: false
+    };
+
+    const difficultyTabs = document.getElementById("difficulty-tabs");
+    const quizArea = document.getElementById("quiz-area");
+    const scoreLabel = document.getElementById("score");
+    const resultBox = document.getElementById("result");
+    const resultText = document.getElementById("result-text");
+    const restartBtn = document.getElementById("restart-btn");
+
+    function renderDifficultyTabs() {
+      difficultyTabs.innerHTML = levels.map(level => `
+        <button class="tab-btn ${state.level === level ? "active" : ""}" data-level="${level}" type="button">
+          ${level}
+        </button>
+      `).join("");
+
+      difficultyTabs.querySelectorAll(".tab-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.level = btn.dataset.level;
+          state.currentIndex = 0;
+          state.score = 0;
+          state.answered = false;
+          resultBox.classList.remove("show");
+          renderDifficultyTabs();
+          renderQuestion();
+        });
+      });
+    }
+
+    function updateScore() {
+      const total = quizData[state.level].length;
+      scoreLabel.textContent = `得点: ${state.score} / ${total}`;
+    }
+
+    function speakText(text) {
+      if (!("speechSynthesis" in window)) {
+        alert("このブラウザでは音声読み上げ機能が使えません。");
+        return;
+      }
+
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "en-US";
+      utterance.rate = 0.95;
+      utterance.pitch = 1.1;
+      utterance.volume = 1;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function renderQuestion() {
+      const list = quizData[state.level];
+      const q = list[state.currentIndex];
+      const total = list.length;
+
+      if (!q) {
+        showResult();
+        return;
+      }
+
+      resultBox.classList.remove("show");
+      quizArea.innerHTML = `
+        <div class="quiz-card">
+          <div class="meta">
+            <span class="difficulty-badge ${getLevelClass(state.level)}">${state.level}</span>
+            <span class="question-no">Question ${state.currentIndex + 1} / ${total}</span>
+          </div>
+
+          <div class="question-visual" aria-hidden="true">${q.icon}</div>
+
+          <p class="question">${q.question}</p>
+
+          <div class="options">
+            ${q.options.map((option, idx) => `
+              <button class="option-btn" data-index="${idx}" type="button">${option}</button>
+            `).join("")}
+          </div>
+
+          <div class="feedback" id="feedback"></div>
+
+          <div class="speech-controls">
+            <button class="read-btn" id="read-btn" type="button">🔊 音声で読む</button>
+          </div>
+
+          <div class="meaning-box" id="meaning-box">
+            <div class="meaning-title">意味</div>
+            <div class="meaning-text">${q.meaning}</div>
+          </div>
+
+          <div class="sentence-box" id="sentence-box">
+            <strong>例文:</strong> ${q.example}
+          </div>
+
+          <div class="actions" style="display:flex;justify-content:center;margin-top:18px;">
+            <button class="next-btn" id="next-btn" type="button">次の問題</button>
+          </div>
+        </div>
+      `;
+
+      const buttons = quizArea.querySelectorAll(".option-btn");
+      buttons.forEach(btn => {
+        btn.addEventListener("click", () => handleAnswer(Number(btn.dataset.index)));
+      });
+
+      const readBtn = document.getElementById("read-btn");
+      readBtn.addEventListener("click", () => {
+        const textToRead = `${q.question} ${q.example}`;
+        speakText(textToRead);
+      });
+
+      const nextBtn = document.getElementById("next-btn");
+      nextBtn.addEventListener("click", () => {
+        state.currentIndex += 1;
+        if (state.currentIndex < list.length) {
+          state.answered = false;
+          renderQuestion();
+        } else {
+          showResult();
+        }
+      });
+
+      updateScore();
+    }
+
+    function getLevelClass(level) {
+      if (level === "初級") return "level-beginner";
+      if (level === "中級") return "level-intermediate";
+      return "level-advanced";
+    }
+
+    function handleAnswer(selectedIndex) {
+      if (state.answered) return;
+      state.answered = true;
+
+      const q = quizData[state.level][state.currentIndex];
+      const buttons = quizArea.querySelectorAll(".option-btn");
+      const feedback = document.getElementById("feedback");
+      const meaningBox = document.getElementById("meaning-box");
+      const sentenceBox = document.getElementById("sentence-box");
+      const nextBtn = document.getElementById("next-btn");
+
+      buttons.forEach((btn, idx) => {
+        btn.disabled = true;
+        if (idx === q.answer) btn.classList.add("correct");
+        if (idx === selectedIndex && idx !== q.answer) btn.classList.add("wrong");
+      });
+
+      if (selectedIndex === q.answer) {
+        state.score += 1;
+        feedback.textContent = "正解！";
+        feedback.classList.add("correct");
+        feedback.classList.remove("wrong");
+      } else {
+        feedback.textContent = `不正解！正解は ${String.fromCharCode(65 + q.answer)} です。`;
+        feedback.classList.add("wrong");
+        feedback.classList.remove("correct");
+      }
+
+      meaningBox.classList.add("show");
+      sentenceBox.classList.add("show");
+
+      updateScore();
+      nextBtn.classList.add("visible");
+    }
+
+    function showResult() {
+      const total = quizData[state.level].length;
+      const percent = Math.round((state.score / total) * 100);
+      const levelText = state.level;
+
+      quizArea.innerHTML = "";
+      resultBox.classList.add("show");
+
+      resultText.textContent = `${levelText} で ${state.score} / ${total} 問正解です。成績: ${percent}%`;
+    }
+
+    restartBtn.addEventListener("click", () => {
+      state.currentIndex = 0;
+      state.score = 0;
+      state.answered = false;
+      renderDifficultyTabs();
+      renderQuestion();
+    });
+
+    renderDifficultyTabs();
+    renderQuestion();
+  </script>
+</body>
+</html>
